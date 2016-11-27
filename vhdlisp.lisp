@@ -63,7 +63,7 @@
 		    (format t ";~%"))
 		(incf count)))
     
-    (format t "   end ~a;~%" name)))
+    (format t "   end ~a;~%" (string-downcase name)) ))
 
 
 
@@ -100,7 +100,7 @@
 				       (if-pars (cddr lst))))
 	( (equal (car lst) 'else) (progn (format t "else ~%")
 					 (if-pars (cdr lst)) ))
-	( (null lst) (format t "endif")) 
+	( (null lst) (format t "end if")) 
 	(t (progn (format t "        ~a;~%"  (operations (car lst)))
 		  (if-pars (cdr lst)) )) ))
 			  

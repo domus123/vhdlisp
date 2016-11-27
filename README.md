@@ -8,7 +8,7 @@
 #Dependencies
 
 <p> SBCL 
-<p> Any text editor, but, in case you need one https://github.com/FemtoEmacs/Femto-Emacs
+<p> Femto-Emacs https://github.com/FemtoEmacs/Femto-Emacs in case you need a editor with synax-highlight
 
 
 #What it can do 

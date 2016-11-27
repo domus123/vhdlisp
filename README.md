@@ -8,7 +8,7 @@
 #Dependencies
 
 <p> SBCL 
-<p> Femto-Emacs https://github.com/FemtoEmacs/Femto-Emacs in case you need a editor with synax-highlight
+<p> Femto-Emacs https://github.com/FemtoEmacs/Femto-Emacs in case you need a editor with syntax-highlight
 
 
 #What it can do 
@@ -67,20 +67,22 @@ Simple and beautifull
 ```vhdl
 library ,ieee ;
 use ieee.std_logic_1164.all;
+
 entity driver is
     port( x:  in std_logic;
-f:  out std_logic); 
+	f:  out std_logic); 
    end driver;
+   
 architecture behv1 of driver is
-begin
-process(X)
-begin
-if (x = 1) then
-        (F <= 1);
-else 
-        (F <= 0);
-end if
-end process;
+	begin
+	process(X)
+		begin
+		if (x = 1) then
+      		  (F <= 1);
+		else 
+      		  (F <= 0);
+		end if
+	end process;
 end behv1
 
 ```

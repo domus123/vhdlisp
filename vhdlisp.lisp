@@ -1,3 +1,19 @@
+(declaim (optimize (speed 3) (debug 0 ))
+	 (ftype (function (*) t) read-lisp)
+	 (ftype (function (* &optional *) t)  library)
+	 (ftype (function (* &optional *) t ) use)
+	 (ftype (function (* &optional *) t ) entity)
+	 (ftype (function (*) t) operations)
+	 (ftype (function (* &optional * * *) entity-creation))
+	 (ftype (function (*) t) transform-list-of-atom)
+	 (ftype (function (* *) t) if-pars)
+	 (ftype (function (* *) t) remove-parentheses)
+	 (ftype (function (* *) t) process-pars)
+	 (ftype (function (* *) t ) arch-pars)
+	 (ftype (function (* *) t) parser)
+	 (ftype (function (* *) t ) main ))
+
+
 (defparameter *code* nil) 
 (defparameter *operators* '(or and xor nxor nor nand \= > < => =<))
 (defparameter *assign* "<=")
@@ -39,7 +55,7 @@
 	      ( (and (null trigger) comma)
 	       (progn  (format stream ", ~a" (string-downcase symbol))
 		       (entity-creation (cdr lst) trigger comma))) ;; none changes
-	      ( (and trigger) (progn (format stream " ~a" (string-downcase symbol))
+	      ( (and trigger) (progn (format stream "     ~a" (string-downcase symbol))
 				     (entity-creation (cdr lst) trigger comma stream)))
 	      (t (error "invalid format at entity declaration"))) )))
        
@@ -51,7 +67,7 @@
 	  (rest-size (length rest))
 	  (count 0 ))1
     (format stream "entity ~a is~%" (string-downcase (car lst)))
-    (format stream "    port( ")
+    (format stream "port( ")
     (loop for item in rest
        do
 	 (progn (entity-creation item nil nil stream)
@@ -85,8 +101,6 @@
 	     ( (atom item) (string-downcase item))
 	     ( (consp item) (transform-list-of-atom item)))))
 
-	     
-       
 ;;Parser for if statements
 (defun if-pars (lst stream)
   (cond ( (equal (car lst) 'if) (progn (format stream "if ")
@@ -98,14 +112,13 @@
 	( (equal (car lst) 'else) (progn (format stream "else ~%")
 					 (if-pars (cdr lst) stream) ))
 	( (null lst) (format stream "end if")) 
-	(t (progn (format stream "        ~a;~%"  (operations (car lst)))
-		  (if-pars (cdr lst) stream) )) ))
+	(t (progn (format stream "        ~a;~%" (remove-parentheses (operations (car lst)) stream))
+		  (if-pars (cdr lst) stream))) ))
 			  
-
 (defun remove-parentheses (lst stream)
   (loop for element in lst
-	do
-	(format stream "~a " element))
+     do
+       (format stream "~a " element))
   (format stream ";~%"))
 
 ;;Parser for process
@@ -115,17 +128,10 @@
   (format stream "begin~%")
   (cond ( (equal (caadr lst) 'if) (if-pars (cadr lst) stream))
 	( t (remove-parentheses (transform-list-of-atom (operations (cadr lst))) stream)))
-	  ;;(format stream "~a;~%" (remove-parentheses (transform-list-of-atom (operations (cadr lst))) )) ))
   (format stream "~%end process;"))
   
-
-;;Architecture parser
-
-
-
-
+;;architecture parser
 ;;MUST DO SIGNAL DECLARATION BEFORE BEGIN
-
 (defun arch-pars (lst stream)
   (let ( (name (string-downcase (car lst)))
 	 (of-at (cadr lst))
@@ -140,7 +146,7 @@
   (format stream "~&end ~a~%" name)))
 
 
-;;Main function parser	   
+;;Lisp object parser   
 (defun parser (lst stream)
   (let ( (head (car lst))
 	 (body (cdr lst))) 

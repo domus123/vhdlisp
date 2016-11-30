@@ -1,0 +1,12 @@
+(library ieee)
+
+(use ieee.std_logic_1164.all)
+
+
+(define-entity xor_gate
+      (a b is in std_logic)
+      (F is out std_logic))
+
+(def-arch bhv of xor_gate
+     (process (a b)
+     	      (set f (and (or a b) (or (not a) b)))))

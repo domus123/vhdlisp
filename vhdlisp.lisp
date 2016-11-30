@@ -82,7 +82,8 @@
   (loop for item in lst
      collect
        (cond ( (numberp item) item)
-	     ( (atom item) (string-downcase item))) ))
+	     ( (atom item) (string-downcase item))
+	     ( (consp item) (transform-list-of-atom item)))))
 
 	     
        
@@ -101,14 +102,20 @@
 		  (if-pars (cdr lst) stream) )) ))
 			  
 
+(defun remove-parentheses (lst stream)
+  (loop for element in lst
+	do
+	(format stream "~a " element))
+  (format stream ";~%"))
 
 ;;Parser for process
 (defun process-pars (lst stream)
   (format stream "process")
-  (format stream "~a~%" (car lst))
+  (format stream "~a~%" (transform-list-of-atom (car lst)))
   (format stream "begin~%")
   (cond ( (equal (caadr lst) 'if) (if-pars (cadr lst) stream))
-	( t (format stream "~a;~%" (transform-list-of-atom (operations (cadr lst))) )))
+	( t (remove-parentheses (transform-list-of-atom (operations (cadr lst))) stream)))
+	  ;;(format stream "~a;~%" (remove-parentheses (transform-list-of-atom (operations (cadr lst))) )) ))
   (format stream "~%end process;"))
   
 

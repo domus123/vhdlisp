@@ -12,58 +12,54 @@
 
 ;;function to create library
 (defun library (lst &optional stream)
-  (declare (ignore stream))
-  (format t "library ")
+  (format stream "library ")
   (loop for item in lst
      do
-       (format t ",~a "  (string-downcase (symbol-name item)) ))
-  (format t ";~%"))
+       (format stream "~a "  (string-downcase (symbol-name item)) ))
+  (format stream ";~%"))
 
 ;;function to create vhdl use
 (defun use (lst &optional stream)
-  (declare (ignore stream))
   (loop for item in lst
      do
-       (format t "use ~a;~%" (string-downcase item))))
+       (format stream "use ~a;~%" (string-downcase item))))
 
 
 ;;will receive a list with the head beeing the name
 ;;aux function to entity
 (defun entity-creation (lst &optional (trigger nil) (comma nil) stream )
-  (declare (ignore stream))
   (if (null lst) nil
       (let ( (symbol (car lst)))
 	(cond ( (and (null trigger) (equal symbol 'is))
-	       (progn (format t ": ")
-		      (entity-creation (cdr lst) t comma))) ;;Change trigger to true 
+	       (progn (format stream ": ")
+		      (entity-creation (cdr lst) t comma stream))) ;;Change trigger to true 
 	      ( (and (null trigger) (null comma))
-	       (progn (format t "~a" (string-downcase symbol))
-		      (entity-creation (cdr lst) trigger t))) ;; change commo to true 
+	       (progn (format stream "~a" (string-downcase symbol))
+		      (entity-creation (cdr lst) trigger t stream))) ;; change commo to true 
 	      ( (and (null trigger) comma)
-	       (progn  (format t ", ~a" (string-downcase symbol))
+	       (progn  (format stream ", ~a" (string-downcase symbol))
 		       (entity-creation (cdr lst) trigger comma))) ;; none changes
-	      ( (and trigger) (progn (format t " ~a" (string-downcase symbol))
-				     (entity-creation (cdr lst) trigger comma)))
+	      ( (and trigger) (progn (format stream " ~a" (string-downcase symbol))
+				     (entity-creation (cdr lst) trigger comma stream)))
 	      (t (error "invalid format at entity declaration"))) )))
        
   
 ;;Function to create entity
 (defun entity (lst &optional stream)
-  (declare (ignore stream))
   (let* ( (name (car lst))
 	  (rest (cdr lst))
 	  (rest-size (length rest))
 	  (count 0 ))1
-    (format t "entity ~a is~%" (string-downcase (car lst)))
-    (format t "    port( ")
+    (format stream "entity ~a is~%" (string-downcase (car lst)))
+    (format stream "    port( ")
     (loop for item in rest
        do
-	 (progn (entity-creation item)
-		(if (equal count (1- rest-size)) (format t "); ~%")
-		    (format t ";~%"))
+	 (progn (entity-creation item nil nil stream)
+		(if (equal count (1- rest-size)) (format stream "); ~%")
+		    (format stream ";~%"))
 		(incf count)))
     
-    (format t "   end ~a;~%" (string-downcase name)) ))
+    (format stream "   end ~a;~%" (string-downcase name)) ))
 
 
 
@@ -91,29 +87,29 @@
 	     
        
 ;;Parser for if statements
-(defun if-pars (lst)
-  (cond ( (equal (car lst) 'if) (progn (format t "if ")
-				       (format t "~a then~%" (transform-list-of-atom (operations (cadr lst)) ))
-				       (if-pars (cddr lst))))
-	( (equal (car lst) 'elsif) (progn (format t "elsif ")
-				       (format t "~a then~%" (transform-list-of-atom (operations (cadr lst)) ))
-				       (if-pars (cddr lst))))
-	( (equal (car lst) 'else) (progn (format t "else ~%")
-					 (if-pars (cdr lst)) ))
-	( (null lst) (format t "end if")) 
-	(t (progn (format t "        ~a;~%"  (operations (car lst)))
-		  (if-pars (cdr lst)) )) ))
+(defun if-pars (lst stream)
+  (cond ( (equal (car lst) 'if) (progn (format stream "if ")
+				       (format stream "~a then~%" (transform-list-of-atom (operations (cadr lst)) ))
+				       (if-pars (cddr lst) stream)))
+	( (equal (car lst) 'elsif) (progn (format stream "elsif ")
+				       (format stream "~a then~%" (transform-list-of-atom (operations (cadr lst)) ))
+				       (if-pars (cddr lst) stream )))
+	( (equal (car lst) 'else) (progn (format stream "else ~%")
+					 (if-pars (cdr lst) stream) ))
+	( (null lst) (format stream "end if")) 
+	(t (progn (format stream "        ~a;~%"  (operations (car lst)))
+		  (if-pars (cdr lst) stream) )) ))
 			  
 
 
 ;;Parser for process
-(defun process-pars (lst)
-  (format t "process")
-  (format t "~a~%" (car lst))
-  (format t "begin~%")
-  (cond ( (equal (caadr lst) 'if) (if-pars (cadr lst)))
-	( t (format t "~a;~%" (transform-list-of-atom (operations (cadr lst))) )))
-  (format t "~%end process;"))
+(defun process-pars (lst stream)
+  (format stream "process")
+  (format stream "~a~%" (car lst))
+  (format stream "begin~%")
+  (cond ( (equal (caadr lst) 'if) (if-pars (cadr lst) stream))
+	( t (format stream "~a;~%" (transform-list-of-atom (operations (cadr lst))) )))
+  (format stream "~%end process;"))
   
 
 ;;Architecture parser
@@ -123,35 +119,36 @@
 
 ;;MUST DO SIGNAL DECLARATION BEFORE BEGIN
 
-(defun arch-pars (lst)
+(defun arch-pars (lst stream)
   (let ( (name (string-downcase (car lst)))
 	 (of-at (cadr lst))
 	 (entity-name (string-downcase (caddr lst)))
 	 (rest (cadddr lst)))	 
-  (format t "~&architecture ~a" name)
-  (if (equal of-at 'of) (format t " of ")
+  (format stream "~&architecture ~a" name)
+  (if (equal of-at 'of) (format stream " of ")
       (error 'malformed-architecture-input' :text "You forgot 'of' in the architecture declaration"))
-  (format t "~a is" entity-name)
-  (format t "~&begin~%")
-  (parser rest)
-  (format t "~&end ~a~%" name)))
+  (format stream "~a is" entity-name)
+  (format stream "~&begin~%")
+  (parser rest stream)
+  (format stream "~&end ~a~%" name)))
 
 
 ;;Main function parser	   
-(defun parser (lst)
+(defun parser (lst stream)
   (let ( (head (car lst))
 	 (body (cdr lst))) 
-    (cond ( (equal head 'library) (library body))
-	  ( (equal head 'use) (use body))
-	  ( (equal head 'define-entity) (entity body))
-	  ( (equal head 'process) (process-pars body))
-	  ( (equal head 'def-arch) (arch-pars body))
+    (cond ( (equal head 'library) (library body stream))
+	  ( (equal head 'use) (use body stream ))
+	  ( (equal head 'define-entity) (entity body stream))
+	  ( (equal head 'process) (process-pars body stream))
+	  ( (equal head 'def-arch) (arch-pars body stream))
 	  (t nil))))
 
 
 ;;main function
-(defun main (file-name)
+(defun main (file-name output-file )
   (setf *code* (read-lisp file-name))
-  (loop for fun in *code*
-     do
-       (parser fun)))
+  (with-open-file (stream output-file :direction :output :if-exists :supersede :if-does-not-exist :create)
+		  (loop for fun in *code*
+			do
+			(parser fun stream))))

@@ -25,6 +25,11 @@
        until (equal lines :eof)
        collect lines)))
 
+(defun rd (elem)
+  (let ( (*readtable* (copy-readtable nil)))
+    (setf (readtable-case *readtable*) :preserve)
+    (read elem)))
+
 
 ;;function to create library
 (defun library (lst &optional stream)
@@ -40,7 +45,6 @@
      do
        (format stream "use ~a;~%" (string-downcase item))))
 
-
 ;;will receive a list with the head beeing the name
 ;;aux function to entity
 (defun entity-creation (lst &optional (trigger nil) (comma nil) stream )
@@ -54,11 +58,10 @@
 		      (entity-creation (cdr lst) trigger t stream))) ;; change commo to true 
 	      ( (and (null trigger) comma)
 	       (progn  (format stream ", ~a" (string-downcase symbol))
-		       (entity-creation (cdr lst) trigger comma))) ;; none changes
-	      ( (and trigger) (progn (format stream "     ~a" (string-downcase symbol))
+		       (entity-creation (cdr lst) trigger comma stream))) ;; none changes
+	      ( (and trigger) (progn (format stream " ~a " (string-downcase symbol))
 				     (entity-creation (cdr lst) trigger comma stream)))
 	      (t (error "invalid format at entity declaration"))) )))
-       
   
 ;;Function to create entity
 (defun entity (lst &optional stream)
@@ -77,9 +80,6 @@
     
     (format stream "   end ~a;~%" (string-downcase name)) ))
 
-
-
-
 ;;Used for transforming all king of operations
 (defun operations (lst)
   (cond ( (null lst) )
@@ -91,7 +91,6 @@
 					       (string-downcase (car lst))
 					       (operations (caddr lst))))
 	(t lst)))
-
 
 ;;Take a list full of atoms and transform it to a list of strigs
 (defun transform-list-of-atom(lst)
@@ -107,8 +106,8 @@
 				       (format stream "~a then~%" (transform-list-of-atom (operations (cadr lst)) ))
 				       (if-pars (cddr lst) stream)))
 	( (equal (car lst) 'elsif) (progn (format stream "elsif ")
-				       (format stream "~a then~%" (transform-list-of-atom (operations (cadr lst)) ))
-				       (if-pars (cddr lst) stream )))
+					  (format stream "~a then~%" (transform-list-of-atom (operations (cadr lst)) ))
+					  (if-pars (cddr lst) stream )))
 	( (equal (car lst) 'else) (progn (format stream "else ~%")
 					 (if-pars (cdr lst) stream) ))
 	( (null lst) (format stream "end if")) 
@@ -157,6 +156,18 @@
 	  ( (equal head 'def-arch) (arch-pars body stream))
 	  (t nil))))
 
+;;Function called when compiled version run
+(defun compile-main ()
+  (let ( (file-name (cadr *posix-argv*))
+	 (output-name (caddr *posix-argv*)))
+    (main file-name output-name)))
+
+;;Function to compile vhdlisp
+(defun compile-vhdlisp ()
+  (sb-ext:save-lisp-and-die "vhdlisp"
+			    :executable t
+			    :toplevel #'compile-main
+			    ))
 
 ;;main function
 (defun main (file-name output-file )

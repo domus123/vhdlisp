@@ -3,10 +3,10 @@
 (use ieee.std_logic_1164.all)
 
 
-(define-entity xor_gate
+(Define-entity XOR_GATE
       (a b is in std_logic)
       (F is out std_logic))
 
-(def-arch bhv of xor_gate
+(def-arch bhv of XOR_GATE
      (process (a b)
      	      (set f (and (or a b) (or (not a) b)))))

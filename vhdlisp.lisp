@@ -15,51 +15,47 @@
 
 
 (defparameter *code* nil) 
-(defparameter *operators* '(or and xor nxor nor nand \= > < => =<))
-(defparameter *assign* "<=")
+(defparameter *operators* '( |or| |and| |xor| |nxor| |nor| |nand| |\=| |>| |<| |=>| |=<| ))
+(defparameter *assign* '|<=|)
 
-;;function to read lisp object from file-name 
+;;function to read lisp object from file-name into tokens list
 (defun read-lisp (file-name)
-  (with-open-file (stream file-name)
-    (loop for lines = (read stream nil :eof)
-       until (equal lines :eof)
-       collect lines)))
-
-(defun rd (elem)
   (let ( (*readtable* (copy-readtable nil)))
     (setf (readtable-case *readtable*) :preserve)
-    (read elem)))
-
-
+    (with-open-file (stream file-name)
+		    (loop for lines = (read stream nil :eof)
+			  until (equal lines :eof)
+			  collect lines))))
+		
 ;;function to create library
 (defun library (lst &optional stream)
   (format stream "library ")
   (loop for item in lst
      do
-       (format stream "~a "  (string-downcase (symbol-name item)) ))
-  (format stream ";~%"))
+       (format stream "~a "  (string item)))
+  (format stream ";~%~%"))
 
 ;;function to create vhdl use
 (defun use (lst &optional stream)
   (loop for item in lst
      do
-       (format stream "use ~a;~%" (string-downcase item))))
+       (format stream "use ~a;~%~%" (string item))))
 
 ;;will receive a list with the head beeing the name
 ;;aux function to entity
 (defun entity-creation (lst &optional (trigger nil) (comma nil) stream )
   (if (null lst) nil
       (let ( (symbol (car lst)))
-	(cond ( (and (null trigger) (equal symbol 'is))
+	(cond ( (and (null trigger) (equal (string-downcase symbol) "is"))
 	       (progn (format stream ": ")
 		      (entity-creation (cdr lst) t comma stream))) ;;Change trigger to true 
 	      ( (and (null trigger) (null comma))
-	       (progn (format stream "~a" (string-downcase symbol))
+	       (progn (format stream "~a" (string symbol))
 		      (entity-creation (cdr lst) trigger t stream))) ;; change commo to true 
 	      ( (and (null trigger) comma)
-	       (progn  (format stream ", ~a" (string-downcase symbol))
+	       (progn  (format stream ", ~a" (string symbol))
 		       (entity-creation (cdr lst) trigger comma stream))) ;; none changes
-	      ( (and trigger) (progn (format stream " ~a " (string-downcase symbol))
+	      ( (and trigger) (progn (format stream " ~a " (string symbol))
 				     (entity-creation (cdr lst) trigger comma stream)))
 	      (t (error "invalid format at entity declaration"))) )))
   
@@ -69,7 +65,7 @@
 	  (rest (cdr lst))
 	  (rest-size (length rest))
 	  (count 0 ))1
-    (format stream "entity ~a is~%" (string-downcase (car lst)))
+    (format stream "entity ~a is~%" (string (car lst)))
     (format stream "port( ")
     (loop for item in rest
        do
@@ -78,17 +74,17 @@
 		    (format stream ";~%"))
 		(incf count)))
     
-    (format stream "   end ~a;~%" (string-downcase name)) ))
+    (format stream "   end ~a;~%~%" (string name)) ))
 
 ;;Used for transforming all king of operations
 (defun operations (lst)
-  (cond ( (null lst) )
+  (cond ( (null lst) " ")
 	( (numberp lst) lst)
-	( (atom lst) (string-downcase lst))
-	( (equal (car lst) 'not) (list "not" (operations (cadr lst))))
-	( (equal (car lst) 'set) (list (cadr lst) *assign* (operations (caddr lst)))) 
+	( (atom lst) (string lst))
+	( (equal (string-downcase (car lst)) "not") (list "not" (operations (cadr lst))))
+	( (equal (string-downcase (car lst)) "set") (list (cadr lst) *assign* (operations (caddr lst)))) 
         ( (member (car lst) *operators*) (list (operations (cadr lst))
-					       (string-downcase (car lst))
+					       (string (car lst))
 					       (operations (caddr lst))))
 	(t lst)))
 
@@ -97,63 +93,64 @@
   (loop for item in lst
      collect
        (cond ( (numberp item) item)
-	     ( (atom item) (string-downcase item))
+	     ( (atom item) (string item))
 	     ( (consp item) (transform-list-of-atom item)))))
 
 ;;Parser for if statements
 (defun if-pars (lst stream)
-  (cond ( (equal (car lst) 'if) (progn (format stream "if ")
+  (cond ( (equal (car lst) '|if| ) (progn (format stream "if ")
 				       (format stream "~a then~%" (transform-list-of-atom (operations (cadr lst)) ))
 				       (if-pars (cddr lst) stream)))
-	( (equal (car lst) 'elsif) (progn (format stream "elsif ")
-					  (format stream "~a then~%" (transform-list-of-atom (operations (cadr lst)) ))
+	( (equal (car lst) '|elsif|) (progn (format stream "elsif ")
+					    (format stream "~a then~%"
+						    (transform-list-of-atom (operations (cadr lst))))
 					  (if-pars (cddr lst) stream )))
-	( (equal (car lst) 'else) (progn (format stream "else ~%")
-					 (if-pars (cdr lst) stream) ))
-	( (null lst) (format stream "end if")) 
-	(t (progn (format stream "        ~a;~%" (remove-parentheses (operations (car lst)) stream))
+	( (equal (car lst) '|else|) (progn (format stream "else ~%")
+					    (if-pars (cdr lst) stream)))
+	( (null lst) (format stream "end if;")) 
+	(t (progn (remove-parentheses (operations (car lst)) stream)
 		  (if-pars (cdr lst) stream))) ))
 			  
 (defun remove-parentheses (lst stream)
   (loop for element in lst
-     do
-       (format stream "~a " element))
-  (format stream ";~%"))
+	do
+	(format stream "~a " element))
+    (format stream ";~%"))
 
 ;;Parser for process
 (defun process-pars (lst stream)
   (format stream "process")
   (format stream "~a~%" (transform-list-of-atom (car lst)))
   (format stream "begin~%")
-  (cond ( (equal (caadr lst) 'if) (if-pars (cadr lst) stream))
+  (cond ( (equal (string-downcase (caadr lst)) "if") (if-pars (cadr lst) stream))
 	( t (remove-parentheses (transform-list-of-atom (operations (cadr lst))) stream)))
   (format stream "~%end process;"))
   
 ;;architecture parser
 ;;MUST DO SIGNAL DECLARATION BEFORE BEGIN
 (defun arch-pars (lst stream)
-  (let ( (name (string-downcase (car lst)))
-	 (of-at (cadr lst))
-	 (entity-name (string-downcase (caddr lst)))
+  (let ( (name (string (car lst)))
+	 (of-at (string-downcase (cadr lst)))
+	 (entity-name (string (caddr lst)))
 	 (rest (cadddr lst)))	 
   (format stream "~&architecture ~a" name)
-  (if (equal of-at 'of) (format stream " of ")
+  (if (equal of-at "of") (format stream " of ")
       (error 'malformed-architecture-input' :text "You forgot 'of' in the architecture declaration"))
   (format stream "~a is" entity-name)
   (format stream "~&begin~%")
   (parser rest stream)
-  (format stream "~&end ~a~%" name)))
+  (format stream "~&end ~a;~%" name)))
 
 
 ;;Lisp object parser   
 (defun parser (lst stream)
-  (let ( (head (car lst))
-	 (body (cdr lst))) 
-    (cond ( (equal head 'library) (library body stream))
-	  ( (equal head 'use) (use body stream ))
-	  ( (equal head 'define-entity) (entity body stream))
-	  ( (equal head 'process) (process-pars body stream))
-	  ( (equal head 'def-arch) (arch-pars body stream))
+  (let ( (head (string-downcase (car lst)))
+	 (body (cdr lst)))
+    (cond ( (equal head "library") (library body stream))
+	  ( (equal head "use") (use body stream ))
+	  ( (equal head "define-entity") (entity body stream))
+	  ( (equal head "process") (process-pars body stream))
+	  ( (equal head "def-arch") (arch-pars body stream))
 	  (t nil))))
 
 ;;Function called when compiled version run
@@ -176,3 +173,8 @@
 		  (loop for fun in *code*
 			do
 			(parser fun stream))))
+
+(defun teste1 ()
+  (main "samples/driver.vlsp" "driver"))
+(defun teste2 ()
+  (main "samples/xor.vlisp" "xor"))

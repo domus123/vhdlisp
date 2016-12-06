@@ -109,4 +109,4 @@ I have a lot to do, but for now i'll keep my mind in some features missing and s
 
 #Bugs and suggestions 
 
-<h5> Any bug report or suggestions can be send here or in my personal email lu.guerra7508@gmail.com </h5> 
+<h5> Any bug report or suggestions can be send here</h5> 

@@ -65,43 +65,45 @@ Simple and beautifull
 <h5> Is kind of messy but works </h5>
 
 ```vhdl
-library ,ieee ;
+library ieee ;
+
 use ieee.std_logic_1164.all;
 
-entity driver is
-    port( x:  in std_logic;
-	f:  out std_logic); 
-   end driver;
-   
-architecture behv1 of driver is
-	begin
-	process(X)
-		begin
-		if (x = 1) then
-      		  (F <= 1);
-		else 
-      		  (F <= 0);
-		end if
-	end process;
-end behv1
+entity Driver is
+  port( x:  in  std_logic ;
+        f:  out  std_logic ); 
+end Driver;
 
+architecture behv1 of driver is
+begin
+  process(x)
+  begin
+    if (x = 1) then
+      f <= 1 ;
+    else 
+      f <= 0 ;
+    end if;
+  end process;
+end behv1;
 ```
+
 #How to use
-  For now you can only use it directly from sbcl 
+
 ```lisp 
 &  sbcl --load vhdlisp.lisp
-  (main "samples/driver.vlsp") 
-
+   (main "samples/driver.vlisp" "driver.vhdl")
+```
+```
+&  sbcl --load vhdlisp.lisp
+   (compile-vhdlisp)
+   ./vhdlisp "samples/driver.vlisp" "driver.vhdl"
 ```
 
 #TODO 
 
 I have a lot to do, but for now i'll keep my mind in some features missing and some bugs that may occur .
 
-<p> * Fix bit numbers '1' and '0' (for now it is equal 1 and 0). 
-<p> * Add the function to write directly to a vhdl file (sorry for this one) .
-<p> * Add a executable version . 
-<p> * Get arguments file-name and output-file from command line (for those who will compile).
+<p> * Fix bit numbers '1' and '0' (for now it is equal 1 and 0).
 <p> * More example codes and a better documentation . 
 <p> * Add many more missing  features .
 

@@ -14,6 +14,8 @@
 	 (ftype (function (* *) t ) main ))
 
 
+(defparameter *version* 0.03)
+(defparameter *creator* "Lucas Guerra Borges")
 (defparameter *code* nil) 
 (defparameter *operators* '( |or| |and| |xor| |nxor| |nor| |nand| |\=| |>| |<| |=>| |=<| ))
 (defparameter *assign* '|<=|)
@@ -161,6 +163,10 @@
 
 ;;Function to compile vhdlisp
 (defun compile-vhdlisp ()
+  (format t "VHDLISP VERSION ~a~%" *version*)
+  (format t "CREATED BY :~a~%" *creator*)
+  (format t "Feel free to use and change w/e you want~%")
+  (format t "-----------------------------------------~%~%~%")
   (sb-ext:save-lisp-and-die "vhdlisp"
 			    :executable t
 			    :toplevel #'compile-main

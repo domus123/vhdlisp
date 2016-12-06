@@ -9,4 +9,4 @@
 
 (def-arch bhv of XOR_GATE
      (process (a b)
-     	      (set f (and (or a b) (or (not a) b)))))
+     	      (set F (and (or a b) (or (not a) b)))))

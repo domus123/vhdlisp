@@ -11,10 +11,13 @@
 	 (ftype (function (* *) t) process-pars)
 	 (ftype (function (* *) t ) arch-pars)
 	 (ftype (function (* *) t) parser)
+	 (ftype (function (* &optional *) port-aux))
+	 (ftype (function (* &optional *) port-pars))
+	 (ftype (function (* &optional *) component))
 	 (ftype (function (* *) t ) main ))
 
 
-(defparameter *version* 0.03)
+(defparameter *version* 0.5)
 (defparameter *creator* "Lucas Guerra Borges")
 (defparameter *code* nil) 
 (defparameter *operators* '( |or| |and| |xor| |nxor| |nor| |nand| |\=| |>| |<| |=>| |=<| ))
@@ -75,8 +78,38 @@
 		(if (equal count (1- rest-size)) (format stream "); ~%")
 		    (format stream ";~%"))
 		(incf count)))
-    
     (format stream "   end ~a;~%~%" (string name)) ))
+
+(defun port-aux (lst &optional stream)
+  (let ( (size (length lst))
+	 (count 1 ))
+    (loop for elem in lst
+	  do
+	  (loop for item in elem
+		do
+		(progn (format t "ITEM --> ~a~%" item)
+		       (cond ( (equal (string-downcase item) "is") (format stream ": "))
+			     (t (format stream "~a " (string item))) )))
+	  (if (< count size) (progn (incf count)
+				    (format stream ";~%"))))
+	    (format stream ");~%")))
+		
+(defun port-pars (lst &optional stream)
+  (cond ( (null lst) nil)
+	( (equal (string-downcase (car lst)) "port")
+ 	  (progn (format stream "port ( ")
+		 (port-aux (cdr lst) stream)))
+	(t (error  "malformated port"))))
+
+(defun component (lst &optional stream)
+  (let ( (head (car lst))
+	 (rest (cdr lst)))
+    (cond ( (null head) (format t "INSIDE NULL~%"))
+	  ( (equal (string-downcase head) "def-comp")
+	    (progn (format stream "component ")
+		   (format stream "~a is~%" (string (car rest)))
+		   (port-pars (cadr rest) stream)))
+	  ( t nil)) ))
 
 ;;Used for transforming all king of operations
 (defun operations (lst)
@@ -153,6 +186,7 @@
 	  ( (equal head "define-entity") (entity body stream))
 	  ( (equal head "process") (process-pars body stream))
 	  ( (equal head "def-arch") (arch-pars body stream))
+	  ( (equal head "component") (component lst stream))
 	  (t nil))))
 
 ;;Function called when compiled version run

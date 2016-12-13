@@ -1,0 +1,22 @@
+(library ieee)
+(use ieee.std_logic_1164.all
+     work.all)
+
+(def-entity comb_ckt
+  (input1 input2 input3 is in std_logic)
+  (output is out std_logic))
+  
+
+(def-arch bhv1 of  driver 
+     (def-comp and-gate
+         (port (X is out std_logic)
+               (Y is in std_logic)))
+     (def-comp OR_GATE
+         (port (x is in std_logic)
+	       (y is in std_logic)
+	       (F2 is out std_logic)))
+
+    (process (input1 input2)
+    	     (set F2 (and input1 input2)))
+)
+	   

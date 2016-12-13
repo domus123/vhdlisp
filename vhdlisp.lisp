@@ -85,14 +85,14 @@
 	 (count 1 ))
     (loop for elem in lst
 	  do
-	  (loop for item in elem
-		do
-		(progn (format t "ITEM --> ~a~%" item)
-		       (cond ( (equal (string-downcase item) "is") (format stream ": "))
-			     (t (format stream "~a " (string item))) )))
-	  (if (< count size) (progn (incf count)
-				    (format stream ";~%"))))
-	    (format stream ");~%")))
+	  (progn 
+	    (loop for item in elem
+		  do
+		  (cond ( (equal (string-downcase item) "is") (format stream ": "))
+			(t (format stream "~a " (string item))) ))
+	    (if (< count size) (progn (incf count)
+				      (format stream ";~%"))
+	      (format stream ");~%")) )) ))
 		
 (defun port-pars (lst &optional stream)
   (cond ( (null lst) nil)
@@ -104,12 +104,12 @@
 (defun component (lst &optional stream)
   (let ( (head (car lst))
 	 (rest (cdr lst)))
-    (cond ( (null head) (format t "INSIDE NULL~%"))
+    (cond ( (null head) (format stream "INSIDE NULL~%"))
 	  ( (equal (string-downcase head) "def-comp")
 	    (progn (format stream "component ")
 		   (format stream "~a is~%" (string (car rest)))
 		   (port-pars (cadr rest) stream)))
-	  ( t nil)) ))
+	  ( t (format stream "~%end component;")) )))
 
 ;;Used for transforming all king of operations
 (defun operations (lst)
@@ -160,33 +160,38 @@
   (cond ( (equal (string-downcase (caadr lst)) "if") (if-pars (cadr lst) stream))
 	( t (remove-parentheses (transform-list-of-atom (operations (cadr lst))) stream)))
   (format stream "~%end process;"))
-  
+
+
+(defun arch-pars-aux (lst stream)
+  (loop for item in lst
+	do
+	(parser item stream)))
 ;;architecture parser
 ;;MUST DO SIGNAL DECLARATION BEFORE BEGIN
 (defun arch-pars (lst stream)
   (let ( (name (string (car lst)))
 	 (of-at (string-downcase (cadr lst)))
 	 (entity-name (string (caddr lst)))
-	 (rest (cadddr lst)))	 
+	 (rest (cdddr lst)))	 
   (format stream "~&architecture ~a" name)
   (if (equal of-at "of") (format stream " of ")
       (error 'malformed-architecture-input' :text "You forgot 'of' in the architecture declaration"))
   (format stream "~a is" entity-name)
   (format stream "~&begin~%")
-  (parser rest stream)
+  (arch-pars-aux (cdddr lst) stream)
   (format stream "~&end ~a;~%" name)))
 
 
 ;;Lisp object parser   
 (defun parser (lst stream)
-  (let ( (head (string-downcase (car lst)))
+  (let ( (head (car lst))
 	 (body (cdr lst)))
-    (cond ( (equal head "library") (library body stream))
-	  ( (equal head "use") (use body stream ))
-	  ( (equal head "define-entity") (entity body stream))
-	  ( (equal head "process") (process-pars body stream))
-	  ( (equal head "def-arch") (arch-pars body stream))
-	  ( (equal head "component") (component lst stream))
+    (cond ( (equal (string-downcase head) "library") (library body stream))
+	  ( (equal (string-downcase head) "use") (use body stream ))
+	  ( (equal (string-downcase head) "define-entity") (entity body stream))
+	  ( (equal (string-downcase head) "process") (process-pars body stream))
+	  ( (equal (string-downcase head) "def-arch") (arch-pars body stream))
+	  ( (equal (string-downcase head) "def-comp") (component lst stream)))
 	  (t nil))))
 
 ;;Function called when compiled version run

@@ -11,11 +11,13 @@
 	 (ftype (function (* *) t) process-pars)
 	 (ftype (function (* *) t ) arch-pars)
 	 (ftype (function (* *) t) parser)
-	 (ftype (function (* &optional *) port-aux))
-	 (ftype (function (* &optional *) port-pars))
-	 (ftype (function (* &optional *) component))
-	 (ftype (function (* *) t ) main ))
-
+	 (ftype (function (* &optional *) t) port-aux)
+	 (ftype (function (* &optional *) t) port-pars)
+	 (ftype (function (* &optional *) t) component)
+	 (ftype (function (*) t) translate-file)
+	 (ftype (function (*) t) get-name)
+	 (ftype (function (*) t) map-input)
+	 (ftype (function (*) t ) main ))
 
 (defparameter *version* 0.5)
 (defparameter *creator* "Lucas Guerra Borges")
@@ -31,7 +33,12 @@
 		    (loop for lines = (read stream nil :eof)
 			  until (equal lines :eof)
 			  collect lines))))
-		
+
+(defun repl-read ()
+  (let ( ( *readtable* (copy-readtable nil)))
+    (setf (readtable-case *readtable*) :preserve)
+    (read)))
+
 ;;function to create library
 (defun library (lst &optional stream)
   (format stream "library ")
@@ -161,7 +168,6 @@
 	( t (remove-parentheses (transform-list-of-atom (operations (cadr lst))) stream)))
   (format stream "~%end process;"))
 
-
 (defun arch-pars-aux (lst stream)
   (loop for item in lst
 	do
@@ -171,8 +177,8 @@
 (defun arch-pars (lst stream)
   (let ( (name (string (car lst)))
 	 (of-at (string-downcase (cadr lst)))
-	 (entity-name (string (caddr lst)))
-	 (rest (cdddr lst)))	 
+	 (entity-name (string (caddr lst))) )
+
   (format stream "~&architecture ~a" name)
   (if (equal of-at "of") (format stream " of ")
       (error 'malformed-architecture-input' :text "You forgot 'of' in the architecture declaration"))
@@ -180,7 +186,6 @@
   (format stream "~&begin~%")
   (arch-pars-aux (cdddr lst) stream)
   (format stream "~&end ~a;~%" name)))
-
 
 ;;Lisp object parser   
 (defun parser (lst stream)
@@ -191,14 +196,12 @@
 	  ( (equal (string-downcase head) "define-entity") (entity body stream))
 	  ( (equal (string-downcase head) "process") (process-pars body stream))
 	  ( (equal (string-downcase head) "def-arch") (arch-pars body stream))
-	  ( (equal (string-downcase head) "def-comp") (component lst stream)))
-	  (t nil))))
+	  ( (equal (string-downcase head) "def-comp") (component lst stream)))))
 
 ;;Function called when compiled version run
 (defun compile-main ()
-  (let ( (file-name (cadr *posix-argv*))
-	 (output-name (caddr *posix-argv*)))
-    (main file-name output-name)))
+  (let ( (file-name (cadr *posix-argv*)))
+    (main file-name)))
 
 ;;Function to compile vhdlisp
 (defun compile-vhdlisp ()
@@ -212,14 +215,44 @@
 			    ))
 
 ;;main function
-(defun main (file-name output-file )
-  (setf *code* (read-lisp file-name))
-  (with-open-file (stream output-file :direction :output :if-exists :supersede :if-does-not-exist :create)
-		  (loop for fun in *code*
-			do
-			(parser fun stream))))
+(defun main (file)
+  (if (consp file)
+      (map-input file)
+    (translate-file file))
+  (format t "------------------------------------~%")
+  (format t "------------------------------------~%")
+  (format t "-------------COMPILED---------------~%"))
+
+(defun get-name (str)
+  (let ( (pos 0 ))
+    (loop for char = (aref str pos)
+	  until (equal char #\.)
+	  do
+	  (incf pos))
+    (incf pos)
+    (concatenate 'string (subseq str 0 pos) "vhdl")))
+
+;;Run the necessarys routines to transform vhdlisp into vhdl
+(defun translate-file (elem)
+  (let ( ( code (read-lisp elem))
+	 ( output-name (get-name elem)))
+    (with-open-file (stream output-name :direction :output
+			    :if-exists :supersede
+			    :if-does-not-exist :create)
+		    (loop for fun in code
+			  do
+			  (parser fun stream))))
+  'ok)
+
+(defun map-input (lst-of-files)
+  (declare (optimize (speed 3) (debug 0) (safety 0))
+	   (type LIST lst-of-files))
+  (mapcar #'translate-file lst-of-files))
+
 
 (defun teste1 ()
-  (main "samples/driver.vlsp" "driver"))
+  (main "samples/driver.vlisp" ))
 (defun teste2 ()
-  (main "samples/xor.vlisp" "xor"))
+  (main "samples/xor.vlisp"))
+(defun teste3 ()
+  (map-input '("samples/comp.vlisp" "samples/driver.vlisp" "samples/or_gate.vlisp" "samples/xor.vlisp")))

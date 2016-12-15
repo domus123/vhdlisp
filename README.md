@@ -1,7 +1,7 @@
 # Vhdl Lisp 
 
 
-<p> The idea behind this program is to make it easier for lisp programmers to work with VHDL by creating a similar and easier syntax .
+<p> The idea behind this program is to make it easier for lisp programmers to work with VHDL by creating a similar and easier syntax manipulating lisp list (sexpr). 
 
 
 
@@ -17,7 +17,7 @@ Take by example the following program writted in VHDL
 
 ```vhdl
 
-ibrary ieee;
+library ieee;
 use ieee.std_logic_1164.all;
 
 entity Driver is
@@ -88,15 +88,19 @@ end behv1;
 ```
 
 #How to use
+<p> In this version of vhdlisp we make .vhdl extension for you
+<p> I recommend when creating a file use the file name equal the entity of your program.
+<p> Main function now work with lists, that way, if you have a lot of vhdlisp code you can compile it at once. 
 
 ```lisp 
 &  sbcl --load vhdlisp.lisp
-   (main "samples/driver.vlisp" "driver.vhdl")
+   (main "samples/driver.vlisp"")
+   (main '("samples/driver.vlisp" "samples/xor.vlisp"))
 ```
 ```
 &  sbcl --load vhdlisp.lisp
    (compile-vhdlisp)
-   ./vhdlisp "samples/driver.vlisp" "driver.vhdl"
+   ./vhdlisp "samples/driver.vlisp" 
 ```
 
 #TODO 
@@ -106,6 +110,21 @@ I have a lot to do, but for now i'll keep my mind in some features missing and s
 <p> * Fix bit numbers '1' and '0' (for now it is equal 1 and 0).
 <p> * More example codes and a better documentation . 
 <p> * Add many more missing  features .
+<p> * Repl for vhdlisp (cool rigth?).
+<p> * Auto-ident (pretty ugly the identation now rigth? Sorry :[ ).
+<p> * Oficial documentation. 
+#What i have added
+
+<p> * Components. 
+<p> * Compile a list of vhdlisp files. 
+<p> * Changed some functions logic.
+<p> * More vhdlisp sample codes o/ . 
+
+#What i'm working on 
+
+<p> * Port map to use components.
+<p> * Variables. 
+<p> * Signal.
 
 #Bugs and suggestions 
 

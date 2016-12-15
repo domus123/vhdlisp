@@ -1,0 +1,18 @@
+(library ieee)
+(use ieee.std_logic_1164.all)
+
+(def-entity OR_GATE
+ 	    (X Y is in std_logic)
+	    (F2 is out std_logic))
+
+(def-arch bhv of OR_GATE
+	  (process (x y)
+	   	   (set F2 (or x y))))
+
+
+(def-arch bhv2 of OR_GATE
+	  (process (x y)
+	  	   (if (and (= X 0) (= Y 0))
+		       (set F2 0)
+		       else
+		       (set F2 1)) ))

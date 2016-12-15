@@ -115,8 +115,9 @@
 	  ( (equal (string-downcase head) "def-comp")
 	    (progn (format stream "component ")
 		   (format stream "~a is~%" (string (car rest)))
-		   (port-pars (cadr rest) stream)))
-	  ( t (format stream "~%end component;")) )))
+		   (port-pars (cadr rest) stream)
+		   (format stream "~&end component;~%~%")))
+	  ( t (format stream "~&end component;~%~%")) )))
 
 ;;Used for transforming all king of operations
 (defun operations (lst)

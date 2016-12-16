@@ -10,7 +10,8 @@
 (def-arch bhv1 of  driver 
      (def-comp and-gate
          (port (X is out std_logic)
-               (Y is in std_logic)))
+               (Y is in std_logic)
+	       (F1 is out std_logic)))
      (def-comp OR_GATE
          (port (x is in std_logic)
 	       (y is in std_logic)
@@ -19,4 +20,11 @@
     (process (input1 input2)
     	     (set F2 (and input1 input2)))
 )
-	   
+
+(def-struct
+    (port-map Gate1 AND_GATE ( (a input1)
+     	       	    	       (b input2)
+			       (F1 wire)))
+    (port-map Gate2 OR_GATE ( (x wire)
+                              (y input3)
+			      (F2 output))))

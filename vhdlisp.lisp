@@ -1,4 +1,4 @@
-(declaim (optimize (speed 3) (debug 0 ))
+(declaim (optimize (speed 3) (debug 0) (safety 0))
 	 (ftype (function (*) t) read-lisp)
 	 (ftype (function (* &optional *) t)  library)
 	 (ftype (function (* &optional *) t ) use)
@@ -10,13 +10,15 @@
 	 (ftype (function (* *) t) remove-parentheses)
 	 (ftype (function (* *) t) process-pars)
 	 (ftype (function (* *) t ) arch-pars)
-	 (ftype (function (* *) t) parser)
+	 (ftype (function (* &optional *) t) parser)
 	 (ftype (function (* &optional *) t) port-aux)
 	 (ftype (function (* &optional *) t) port-pars)
 	 (ftype (function (* &optional *) t) component)
 	 (ftype (function (*) t) translate-file)
 	 (ftype (function (*) t) get-name)
 	 (ftype (function (*) t) map-input)
+	 (ftype (function (* &optional *) t) port-map)
+	 (ftype (function (* &optional *) t) port-map-aux)
 	 (ftype (function (*) t ) main ))
 
 (defparameter *version* 0.5)
@@ -108,6 +110,35 @@
 		 (port-aux (cdr lst) stream)))
 	(t (error  "malformated port"))))
 
+;;This function is so ugly that scare me.
+;;Sorry for this monstrosity
+(defun port-map-aux (lst &optional stream)
+  (let ( ( size (length lst))
+	 (aux-count 1 ))
+    (loop for item in lst
+       do
+	 (progn 
+	   (cond ( (consp item) (format stream "~a => ~a" (car item) (cadr item)))
+		 ( (atom item) (format stream "~a" item)))
+	   (if (< aux-count size) (format stream ", ")
+	       (format stream ");~%"))
+	   (incf aux-count))) ))
+
+;;(port-map name entity ( a b c ))
+(defun port-map (lst &optional stream)
+  (let ((name (car lst))
+	(entity (cadr lst))
+	(rest (caddr lst)))
+  (format stream "~a: ~a port map ( " name entity)
+  (port-map-aux rest stream)))
+
+(defun vhdl-struct(lst &optional stream)
+  (format stream "begin ~%~%")
+  (loop for item in lst
+     do 
+       (parser item stream))
+  (format stream "end struct;~%~%" ))
+
 (defun component (lst &optional stream)
   (let ( (head (car lst))
 	 (rest (cdr lst)))
@@ -173,6 +204,7 @@
   (loop for item in lst
 	do
 	(parser item stream)))
+
 ;;architecture parser
 ;;MUST DO SIGNAL DECLARATION BEFORE BEGIN
 (defun arch-pars (lst stream)
@@ -189,7 +221,7 @@
   (format stream "~&end ~a;~%" name)))
 
 ;;Lisp object parser   
-(defun parser (lst stream)
+(defun parser (lst &optional stream)
   (let ( (head (car lst))
 	 (body (cdr lst)))
     (cond ( (equal (string-downcase head) "library") (library body stream))
@@ -197,7 +229,10 @@
 	  ( (equal (string-downcase head) "define-entity") (entity body stream))
 	  ( (equal (string-downcase head) "process") (process-pars body stream))
 	  ( (equal (string-downcase head) "def-arch") (arch-pars body stream))
-	  ( (equal (string-downcase head) "def-comp") (component lst stream)))))
+	  ( (equal (string-downcase head) "def-comp") (component lst stream))
+	  ( (equal (string-downcase head) "def-struct") (vhdl-struct body stream))
+	  ( (equal (string-downcase head) "port-map") (port-map body stream))
+	  (t nil)) ))
 
 ;;Function called when compiled version run
 (defun compile-main ()
@@ -217,12 +252,11 @@
 
 ;;main function
 (defun main (file)
+  (format t "---------------------------~%")
   (if (consp file)
       (map-input file)
-    (translate-file file))
-  (format t "------------------------------------~%")
-  (format t "------------------------------------~%")
-  (format t "-------------COMPILED---------------~%"))
+      (translate-file file))
+  (format t "----------------------------~%"))
 
 (defun get-name (str)
   (let ( (pos 0 ))
@@ -242,8 +276,8 @@
 			    :if-does-not-exist :create)
 		    (loop for fun in code
 			  do
-			  (parser fun stream))))
-  'ok)
+			  (parser fun stream)))
+  (format t "~a CREATED~%" output-name)))
 
 (defun map-input (lst-of-files)
   (declare (optimize (speed 3) (debug 0) (safety 0))

@@ -21,7 +21,7 @@
 	 (ftype (function (* &optional *) t) port-map-aux)
 	 (ftype (function (*) t ) main ))
 
-(defparameter *version* 0.5)
+(defparameter *version* 0.6) ;;Seems stable
 (defparameter *creator* "Lucas Guerra Borges")
 (defparameter *code* nil) 
 (defparameter *operators* '( |or| |and| |xor| |nxor| |nor| |nand| |\=| |>| |<| |=>| |=<| ))

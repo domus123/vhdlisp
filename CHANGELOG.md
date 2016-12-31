@@ -1,4 +1,5 @@
 # December 2016
+	* Vhdlisp Repl (finally!!). 
 	* Component added (def-comp).
 	* Port map added.
 	* Struct added (def-struct).

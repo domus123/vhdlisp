@@ -103,6 +103,15 @@ end behv1;
    ./vhdlisp "samples/driver.vlisp" 
 ```
 
+<h4> Using VHDL-REPL 
+```lisp 
+  & sbcl --load vhdlisp.lisp
+  * (vhdl-repl)
+  * &- (library ieee) 
+  -> library ieee;  
+  &- (exit-repl) ;; this will exit from vhdl repl
+   
+```
 #TODO 
 
 I have a lot to do, but for now i'll keep my mind in some features missing and some bugs that may occur .
@@ -110,11 +119,12 @@ I have a lot to do, but for now i'll keep my mind in some features missing and s
 <p> * Fix bit numbers '1' and '0' (for now it is equal 1 and 0).
 <p> * More example codes and a better documentation . 
 <p> * Add many more missing  features .
-<p> * Repl for vhdlisp (cool rigth?).
 <p> * Auto-ident (pretty ugly the identation now rigth? Sorry :[ ).
 <p> * Oficial documentation. 
+
 #What i have added
 
+<p> * REPL
 <p> * Components. 
 <p> * Compile a list of vhdlisp files. 
 <p> * Changed some functions logic.

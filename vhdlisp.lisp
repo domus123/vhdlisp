@@ -219,6 +219,9 @@
   (arch-pars-aux (cdddr lst) flag)
   (v-format flag "~&end ~a;~%" name)))
 
+(defun byte-parser (elem &optional flag)
+  (v-format flag "'~a' " elem))
+
 ;;Lisp object parser   
 (defun parser (lst &optional flag)
   (let ( (head (car lst))
@@ -289,6 +292,10 @@
     (read)))
 
 (defun vhdl-repl ()
+  (format t "Welcome to vhdl-repl~%")
+  (format t "Vhdlisp version ~a~%" *version*)
+  (format t "Designed by ~a~%" *creator*)
+  (format t "(exit-repl) to close vhdl-repl~%")
   (let ( ( read-var nil))
     (loop
        until (equal read-var '(|exit-repl|))

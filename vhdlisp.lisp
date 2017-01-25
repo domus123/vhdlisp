@@ -317,12 +317,9 @@
 	       (return)
 	       (parser read-var t ))) )))
 
-
-
-
-(defun teste1 ()
+(defun test1 ()
   (main "samples/driver.vlisp" ))
-(defun teste2 ()
+(defun test2 ()
   (main "samples/xor.vlisp"))
-(defun teste3 ()
+(defun test3 ()
   (main '("samples/comb_ckt.vlisp" "samples/driver.vlisp" "samples/or_gate.vlisp" "samples/xor.vlisp")))

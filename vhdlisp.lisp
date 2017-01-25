@@ -1,3 +1,12 @@
+#|(in-package :cl-user)
+(defpackage :vhdlisp
+  (:use :common-lisp)
+  (:export :vhdl-repl
+	  :main
+	  :compile-vhdlisp))
+(in-package :vhdlisp)
+
+|#
 (declaim (optimize (speed 3) (debug 0) (safety 0))
 	 (ftype (function (*) t) read-lisp)
 	 (ftype (function (* &optional *) t)  library)
@@ -21,7 +30,7 @@
 	 (ftype (function (* &optional *) t) port-map-aux)
 	 (ftype (function (*) t ) main ))
 
-(defparameter *version* 0.8) ;;Seems stable
+(defparameter *version* 1.0) ;;Seems stable
 (defparameter *creator* "Lucas Guerra Borges")
 (defparameter *code* nil) 
 (defparameter *operators* '( |or| |and| |xor| |nxor| |nor| |nand| |\=| |>| |<| |=>| |=<| ))
@@ -316,4 +325,4 @@
 (defun teste2 ()
   (main "samples/xor.vlisp"))
 (defun teste3 ()
-  (map-input '("samples/comp.vlisp" "samples/driver.vlisp" "samples/or_gate.vlisp" "samples/xor.vlisp")))
+  (main '("samples/comb_ckt.vlisp" "samples/driver.vlisp" "samples/or_gate.vlisp" "samples/xor.vlisp")))

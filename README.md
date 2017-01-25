@@ -129,10 +129,10 @@ I have a lot to do, but for now i'll keep my mind in some features missing and s
 <p> * Compile a list of vhdlisp files. 
 <p> * Changed some functions logic.
 <p> * More vhdlisp sample codes o/ . 
+<p> * Port-map.
 
 #What i'm working on 
 
-<p> * Port map to use components.
 <p> * Variables. 
 <p> * Signal.
 

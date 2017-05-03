@@ -41,6 +41,8 @@ begin
 end behv1;
 ```
 <h4> And here is the vhdlisp implementation </h4> 
+
+
 ```
 (library ieee)
 
@@ -103,7 +105,7 @@ end behv1;
    ./vhdlisp "samples/driver.vlisp" 
 ```
 
-<h4> Using VHDL-REPL 
+<h4> Using VHDL-REPL </h4> 
 ```lisp 
   & sbcl --load vhdlisp.lisp
   * (vhdl-repl)
@@ -138,4 +140,4 @@ I have a lot to do, but for now i'll keep my mind in some features missing and s
 
 #Bugs and suggestions 
 
-<h5> Any bug report or suggestions can be send here</h5> 
+<h5> Any bug report or suggestions can be send here </h5> 

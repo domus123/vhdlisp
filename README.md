@@ -98,8 +98,7 @@ end behv1;
 &  sbcl --load vhdlisp.lisp
    (main "samples/driver.vlisp"")
    (main '("samples/driver.vlisp" "samples/xor.vlisp"))
-```
-```
+
 &  sbcl --load vhdlisp.lisp
    (compile-vhdlisp)
    ./vhdlisp "samples/driver.vlisp" 
@@ -118,7 +117,7 @@ end behv1;
 
 I have a lot to do, but for now i'll keep my mind in some features missing and some bugs that may occur .
 
-<p> * Fix bit numbers '1' and '0' (for now it is equal 1 and 0).
+<p> * Fix bit numbers '1' and '0' (for now it is equal 1 and 0). 
 <p> * More example codes and a better documentation . 
 <p> * Add many more missing  features .
 <p> * Auto-ident (pretty ugly the identation now rigth? Sorry :[ ).

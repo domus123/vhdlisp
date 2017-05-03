@@ -117,25 +117,25 @@ end behv1;
 
 I have a lot to do, but for now i'll keep my mind in some features missing and some bugs that may occur .
 
-<p> * Fix bit numbers '1' and '0' (for now it is equal 1 and 0). 
-<p> * More example codes and a better documentation . 
-<p> * Add many more missing  features .
-<p> * Auto-ident (pretty ugly the identation now rigth? Sorry :[ ).
-<p> * Oficial documentation. 
+ * Fix bit numbers '1' and '0' (for now it is equal 1 and 0). 
+ * More example codes and a better documentation . 
+ * Add many more missing  features .
+ * Auto-ident (pretty ugly the identation now rigth? Sorry :[ ).
+ * Oficial documentation. 
 
 #What i have added
 
-<p> * REPL
-<p> * Components. 
-<p> * Compile a list of vhdlisp files. 
-<p> * Changed some functions logic.
-<p> * More vhdlisp sample codes o/ . 
-<p> * Port-map.
+ * REPL
+ * Components. 
+ * Compile a list of vhdlisp files. 
+ * Changed some functions logic.
+ * More vhdlisp sample codes o/ . 
+ * Port-map.
 
 #What i'm working on 
 
-<p> * Variables. 
-<p> * Signal.
+ * Variables. 
+ * Signal.
 
 #Bugs and suggestions 
 

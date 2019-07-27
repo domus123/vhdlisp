@@ -105,14 +105,15 @@ end behv1;
 ```
 
 <h4> Using VHDL-REPL </h4> 
+
 ```lisp 
   & sbcl --load vhdlisp.lisp
   * (vhdl-repl)
   * &- (library ieee) 
   -> library ieee;  
   &- (exit-repl) ;; this will exit from vhdl repl
-   
 ```
+
 #TODO 
 
 I have a lot to do, but for now i'll keep my mind in some features missing and some bugs that may occur .
